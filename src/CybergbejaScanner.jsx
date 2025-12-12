@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, QrCode } from 'lucide-react';
+import { Camera } from 'lucide-react';
 
 // Load jsQR and qrcode-generator libraries from CDN
 const loadLibraries = () => {
