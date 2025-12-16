@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera } from 'lucide-react';
+import { Camera, QrCode } from 'lucide-react';
 
 // Load jsQR and qrcode-generator libraries from CDN
 const loadLibraries = () => {
@@ -47,8 +47,10 @@ export default function CybergbejaScanner() {
 
   useEffect(() => {
     loadLibraries().then(() => {
-      setLibrariesLoaded(true);
       console.log('Libraries loaded successfully');
+      console.log('jsQR available:', typeof window.jsQR !== 'undefined');
+      console.log('qrcode available:', typeof window.qrcode !== 'undefined');
+      setLibrariesLoaded(true);
     }).catch(err => {
       console.error('Failed to load libraries:', err);
     });
@@ -181,7 +183,7 @@ export default function CybergbejaScanner() {
       return;
     }
 
-    if (!librariesLoaded || !window.qrcode) {
+    if (!librariesLoaded) {
       alert('QR Code library is still loading. Please wait...');
       return;
     }
@@ -191,49 +193,56 @@ export default function CybergbejaScanner() {
       qrCodeRef.current.innerHTML = '';
     }
 
-    try {
-      // Create QR code using qrcode-generator library
-      const typeNumber = 0; // Auto determine type
-      const errorCorrectionLevel = 'L';
-      const qr = window.qrcode(typeNumber, errorCorrectionLevel);
-      qr.addData(generateText);
-      qr.make();
-      
-      // Create canvas and draw QR code
-      const canvas = document.createElement('canvas');
-      const cellSize = 8;
-      const margin = 16;
-      const size = qr.getModuleCount() * cellSize + margin * 2;
-      
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      
-      // White background
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, size, size);
-      
-      // Black modules
-      ctx.fillStyle = '#000000';
-      for (let row = 0; row < qr.getModuleCount(); row++) {
-        for (let col = 0; col < qr.getModuleCount(); col++) {
-          if (qr.isDark(row, col)) {
-            ctx.fillRect(
-              col * cellSize + margin,
-              row * cellSize + margin,
-              cellSize,
-              cellSize
-            );
+    // Small delay to ensure DOM is ready
+    setTimeout(() => {
+      try {
+        if (!qrCodeRef.current) {
+          alert('QR Code container not ready. Please try again.');
+          return;
+        }
+
+        // Create QR code using qrcode-generator library
+        const qr = window.qrcode(0, 'L');
+        qr.addData(generateText);
+        qr.make();
+        
+        // Create canvas and draw QR code
+        const canvas = document.createElement('canvas');
+        const cellSize = 8;
+        const margin = 16;
+        const moduleCount = qr.getModuleCount();
+        const size = moduleCount * cellSize + margin * 2;
+        
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        // White background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        
+        // Black modules
+        ctx.fillStyle = '#000000';
+        for (let row = 0; row < moduleCount; row++) {
+          for (let col = 0; col < moduleCount; col++) {
+            if (qr.isDark(row, col)) {
+              ctx.fillRect(
+                col * cellSize + margin,
+                row * cellSize + margin,
+                cellSize,
+                cellSize
+              );
+            }
           }
         }
+        
+        qrCodeRef.current.appendChild(canvas);
+        setGeneratedQR(true);
+      } catch (err) {
+        console.error('Generate error:', err);
+        alert('Error generating QR code: ' + err.message);
       }
-      
-      qrCodeRef.current.appendChild(canvas);
-      setGeneratedQR(true);
-    } catch (err) {
-      console.error('Generate error:', err);
-      alert('Error generating QR code. Please try again.');
-    }
+    }, 100);
   };
 
   return (
