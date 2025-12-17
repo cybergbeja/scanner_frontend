@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, QrCode } from 'lucide-react';
+import { Camera } from 'lucide-react';
 
 // Load jsQR and qrcode-generator libraries from CDN
 const loadLibraries = () => {
@@ -123,7 +123,6 @@ export default function CybergbejaScanner() {
     const context = canvas.getContext('2d');
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     
-    // Use jsQR library
     if (window.jsQR) {
       const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
         inversionAttempts: "dontInvert",
@@ -188,12 +187,10 @@ export default function CybergbejaScanner() {
       return;
     }
 
-    // Clear previous QR code
     if (qrCodeRef.current) {
       qrCodeRef.current.innerHTML = '';
     }
 
-    // Small delay to ensure DOM is ready
     setTimeout(() => {
       try {
         if (!qrCodeRef.current) {
@@ -201,12 +198,10 @@ export default function CybergbejaScanner() {
           return;
         }
 
-        // Create QR code using qrcode-generator library
         const qr = window.qrcode(0, 'L');
         qr.addData(generateText);
         qr.make();
         
-        // Create canvas and draw QR code
         const canvas = document.createElement('canvas');
         const cellSize = 8;
         const margin = 16;
@@ -217,11 +212,9 @@ export default function CybergbejaScanner() {
         canvas.height = size;
         const ctx = canvas.getContext('2d');
         
-        // White background
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, size, size);
         
-        // Black modules
         ctx.fillStyle = '#000000';
         for (let row = 0; row < moduleCount; row++) {
           for (let col = 0; col < moduleCount; col++) {
@@ -247,11 +240,9 @@ export default function CybergbejaScanner() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* CHANGE LOGO HERE: Replace '/logo.png' with your logo file path */}
             <img 
               src="/logo.png" 
               alt="Cybergbeja Logo" 
@@ -279,11 +270,9 @@ export default function CybergbejaScanner() {
         </div>
       </header>
 
-      {/* Main Content */}
       {activeTab === 'scan' ? (
         <div className="container mx-auto px-6 py-12">
           <div className="flex gap-8 items-start">
-            {/* Video Preview */}
             <div className="flex-shrink-0">
               <div className="w-96 h-72 bg-white border-2 border-gray-200 rounded-lg shadow-sm overflow-hidden relative">
                 <video
@@ -301,7 +290,6 @@ export default function CybergbejaScanner() {
               </div>
             </div>
 
-            {/* Results Section */}
             <div className="flex-1">
               <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-8 mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Scan Result</h2>
@@ -328,7 +316,6 @@ export default function CybergbejaScanner() {
           </div>
         </div>
       ) : (
-        /* Generate QR Tab */
         <div className="container mx-auto px-6 py-12">
           <div className="max-w-2xl mx-auto">
             <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-8 mb-6">
@@ -348,10 +335,16 @@ export default function CybergbejaScanner() {
               </button>
             </div>
 
-            {generatedQR && (
-              <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-8 text-center">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Your QR Code</h3>
-                <div ref={qrCodeRef} className="flex justify-center mb-4"></div>
+            <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm p-8 text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                {generatedQR ? 'Your QR Code' : 'QR Code will appear here'}
+              </h3>
+              <div ref={qrCodeRef} className="flex justify-center mb-4 min-h-[280px] items-center">
+                {!generatedQR && (
+                  <p className="text-gray-400">Enter text and click generate</p>
+                )}
+              </div>
+              {generatedQR && (
                 <button
                   onClick={() => {
                     const canvas = qrCodeRef.current.querySelector('canvas');
@@ -367,22 +360,19 @@ export default function CybergbejaScanner() {
                 >
                   Download QR Code
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Footer */}
       <footer className="bg-blue-400 text-gray-900 py-8 mt-12">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                {/* CHANGE LOGO HERE: Replace '/logo.png' with your logo file path */}
                 <img 
                   src="/logo.png" 
                   alt="Cybergbeja Logo" 
